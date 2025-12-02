@@ -1,0 +1,149 @@
+<?php
+
+/**
+ * Order Model
+ */
+
+class Order
+{
+    private $conn;
+    private $orderTable = "orders";
+    private $orderItemTable = "order_items";
+
+    public function __construct($db)
+    {
+        $this->conn = $db;
+    }
+
+    public function create($userId, $totalAmount)
+    {
+        $sql = "INSERT INTO {$this->orderTable} (user_id, total_amount, order_date) 
+                OUTPUT INSERTED.order_id
+                VALUES (?, ?, GETDATE())";
+
+        $stmt = sqlsrv_query($this->conn, $sql, array($userId, $totalAmount));
+
+        if ($stmt === false) {
+            return false;
+        }
+
+        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        return $row ? $row['order_id'] : false;
+    }
+
+    public function addOrderItem($orderId, $warehouseItemId, $qty, $price)
+    {
+        $sql = "INSERT INTO {$this->orderItemTable} (order_id, warehouse_item_id, qty, price_at_order) 
+                VALUES (?, ?, ?, ?)";
+
+        $stmt = sqlsrv_query($this->conn, $sql, array($orderId, $warehouseItemId, $qty, $price));
+        return $stmt !== false;
+    }
+
+    public function getAll($regionCode = null)
+    {
+        $sql = "SELECT o.*, u.full_name, u.email, u.region_code 
+                FROM {$this->orderTable} o
+                LEFT JOIN users u ON o.user_id = u.user_id";
+        
+        $params = array();
+        if ($regionCode !== null) {
+            $sql .= " WHERE u.region_code = ?";
+            $params[] = $regionCode;
+        }
+        
+        $sql .= " ORDER BY o.order_date DESC";
+        $stmt = sqlsrv_query($this->conn, $sql, $params);
+
+        $orders = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $orders[] = $row;
+        }
+
+        return $orders;
+    }
+
+    public function getByUser($userId)
+    {
+        $sql = "SELECT * FROM {$this->orderTable} 
+                WHERE user_id = ? 
+                ORDER BY order_date DESC";
+        $stmt = sqlsrv_query($this->conn, $sql, array($userId));
+
+        $orders = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $orders[] = $row;
+        }
+
+        return $orders;
+    }
+
+    public function findById($orderId)
+    {
+        $sql = "SELECT o.*, u.full_name, u.email, u.region_code 
+                FROM {$this->orderTable} o
+                LEFT JOIN users u ON o.user_id = u.user_id
+                WHERE o.order_id = ?";
+        $stmt = sqlsrv_query($this->conn, $sql, array($orderId));
+
+        if ($stmt === false) {
+            return null;
+        }
+
+        return sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+    }
+
+    public function getOrderItems($orderId)
+    {
+        $sql = "SELECT oi.*, p.name as product_name, p.photo_url, 
+                       w.warehouse_name
+                FROM {$this->orderItemTable} oi
+                LEFT JOIN warehouse_items wi ON oi.warehouse_item_id = wi.warehouse_item_id
+                LEFT JOIN products p ON wi.product_id = p.product_id
+                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
+                WHERE oi.order_id = ?";
+        $stmt = sqlsrv_query($this->conn, $sql, array($orderId));
+
+        $items = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $items[] = $row;
+        }
+
+        return $items;
+    }
+
+    public function getTotalOrders($regionCode = null)
+    {
+        $sql = "SELECT COUNT(*) as total FROM {$this->orderTable} o";
+        $params = array();
+        
+        if ($regionCode !== null) {
+            $sql .= " LEFT JOIN users u ON o.user_id = u.user_id WHERE u.region_code = ?";
+            $params[] = $regionCode;
+        }
+        
+        $stmt = sqlsrv_query($this->conn, $sql, $params);
+        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        return $row['total'];
+    }
+
+    public function getMonthlyOrders()
+    {
+        $sql = "SELECT 
+                    YEAR(order_date) as year, 
+                    MONTH(order_date) as month, 
+                    COUNT(*) as total_orders,
+                    SUM(total_amount) as total_revenue
+                FROM {$this->orderTable}
+                GROUP BY YEAR(order_date), MONTH(order_date)
+                ORDER BY year DESC, month DESC";
+        $stmt = sqlsrv_query($this->conn, $sql);
+
+        $reports = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $reports[] = $row;
+        }
+
+        return $reports;
+    }
+}

@@ -1,0 +1,177 @@
+<?php
+
+/**
+ * Product Model
+ */
+
+class Product
+{
+    private $conn;
+    private $table = "products";
+
+    public function __construct($db)
+    {
+        $this->conn = $db;
+    }
+
+    public function create($data)
+    {
+        $sql = "INSERT INTO {$this->table} (name, price, photo_url, category_id, created_at) 
+                VALUES (?, ?, ?, ?, GETDATE())";
+
+        $params = array(
+            $data['name'],
+            $data['price'],
+            $data['photo_url'],
+            $data['category_id']
+        );
+
+        $stmt = sqlsrv_query($this->conn, $sql, $params);
+        return $stmt !== false;
+    }
+
+    public function getAll()
+    {
+        $sql = "SELECT p.*, c.category_name 
+                FROM {$this->table} p 
+                LEFT JOIN categories c ON p.category_id = c.category_id 
+                ORDER BY p.created_at DESC";
+        $stmt = sqlsrv_query($this->conn, $sql);
+
+        $products = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $products[] = $row;
+        }
+
+        return $products;
+    }
+
+    public function getByCategory($categoryId)
+    {
+        $sql = "SELECT p.*, c.category_name 
+                FROM {$this->table} p 
+                LEFT JOIN categories c ON p.category_id = c.category_id 
+                WHERE p.category_id = ?
+                ORDER BY p.name";
+        $stmt = sqlsrv_query($this->conn, $sql, array($categoryId));
+
+        $products = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $products[] = $row;
+        }
+
+        return $products;
+    }
+
+    public function findById($id)
+    {
+        $sql = "SELECT p.*, c.category_name 
+                FROM {$this->table} p 
+                LEFT JOIN categories c ON p.category_id = c.category_id 
+                WHERE p.product_id = ?";
+        $stmt = sqlsrv_query($this->conn, $sql, array($id));
+
+        if ($stmt === false) {
+            return null;
+        }
+
+        return sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+    }
+
+    public function update($id, $data)
+    {
+        $sql = "UPDATE {$this->table} 
+                SET name = ?, price = ?, photo_url = ?, category_id = ? 
+                WHERE product_id = ?";
+
+        $params = array(
+            $data['name'],
+            $data['price'],
+            $data['photo_url'],
+            $data['category_id'],
+            $id
+        );
+
+        $stmt = sqlsrv_query($this->conn, $sql, $params);
+        return $stmt !== false;
+    }
+
+    public function delete($id)
+    {
+        $sql = "DELETE FROM {$this->table} WHERE product_id = ?";
+        $stmt = sqlsrv_query($this->conn, $sql, array($id));
+        return $stmt !== false;
+    }
+
+    public function getTotalProducts()
+    {
+        $sql = "SELECT COUNT(*) as total FROM {$this->table}";
+        $stmt = sqlsrv_query($this->conn, $sql);
+        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        return $row['total'];
+    }
+
+    /**
+     * Get all products with stock availability info for specific region
+     */
+    public function getAllWithRegionStock($regionCode = null)
+    {
+        if ($regionCode === null) {
+            // Central mode: return all products
+            return $this->getAll();
+        }
+
+        // Regional mode: return products with stock in region
+        $sql = "SELECT p.*, c.category_name,
+                       SUM(wi.stock) as total_stock,
+                       COUNT(DISTINCT wi.warehouse_id) as warehouse_count
+                FROM {$this->table} p 
+                LEFT JOIN categories c ON p.category_id = c.category_id
+                LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
+                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id AND w.region_code = ?
+                GROUP BY p.product_id, p.name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
+                HAVING SUM(wi.stock) > 0 OR SUM(wi.stock) IS NULL
+                ORDER BY p.created_at DESC";
+        
+        $stmt = sqlsrv_query($this->conn, $sql, array($regionCode));
+
+        $products = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $products[] = $row;
+        }
+
+        return $products;
+    }
+
+    /**
+     * Get products by category with region stock
+     */
+    public function getByCategoryWithRegionStock($categoryId, $regionCode = null)
+    {
+        if ($regionCode === null) {
+            // Central mode
+            return $this->getByCategory($categoryId);
+        }
+
+        // Regional mode: filter by region stock
+        $sql = "SELECT p.*, c.category_name,
+                       SUM(wi.stock) as total_stock
+                FROM {$this->table} p 
+                LEFT JOIN categories c ON p.category_id = c.category_id
+                LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
+                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id AND w.region_code = ?
+                WHERE p.category_id = ?
+                GROUP BY p.product_id, p.name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
+                HAVING SUM(wi.stock) > 0
+                ORDER BY p.name";
+        
+        $stmt = sqlsrv_query($this->conn, $sql, array($regionCode, $categoryId));
+
+        $products = array();
+        while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $products[] = $row;
+        }
+
+        return $products;
+    }
+}

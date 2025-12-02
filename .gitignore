@@ -1,0 +1,41 @@
+# Database Configuration (contains sensitive info)
+config/database.php
+
+# Uploaded files
+public/assets/img/products/*
+!public/assets/img/products/.gitkeep
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+error_log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Composer (if you add it later)
+/vendor/
+composer.lock
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Cache
+cache/
+*.cache
