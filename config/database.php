@@ -9,7 +9,7 @@ class Database
 {
     // SQL Server Configuration
     private $host = "127.0.0.1,1433";              // SQL Server host (e.g., localhost, 127.0.0.1, or server name)
-    private $database = "warehouse_db";       // Database name
+    private $database = "warehouse_3";       // Database name
     private $username = "sa";                 // SQL Server username
     private $password = "123";   // SQL Server password
     private $conn = null;

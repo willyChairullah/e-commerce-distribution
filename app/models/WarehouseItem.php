@@ -84,16 +84,17 @@ class WarehouseItem
 
     public function getByProduct($productId, $regionCode = null)
     {
-        $sql = "SELECT wi.*, w.warehouse_name, w.region_code 
+        $sql = "SELECT wi.*, w.warehouse_name, r.region_code, r.region_name 
                 FROM {$this->table} wi
                 LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
+                LEFT JOIN regions r ON w.region_id = r.region_id
                 WHERE wi.product_id = ? AND wi.stock > 0";
         
         $params = array($productId);
         
         // Filter by region if specified
         if ($regionCode !== null) {
-            $sql .= " AND w.region_code = ?";
+            $sql .= " AND r.region_code = ?";
             $params[] = $regionCode;
         }
         

@@ -42,7 +42,10 @@ class User
 
     public function findByEmail($email)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE email = ?";
+        $sql = "SELECT u.*, r.region_code, r.region_name 
+                FROM {$this->table} u 
+                LEFT JOIN regions r ON u.region_id = r.region_id 
+                WHERE email = ?";
         $stmt = sqlsrv_query($this->conn, $sql, array($email));
 
         if ($stmt === false) {
@@ -54,7 +57,10 @@ class User
 
     public function findById($id)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE user_id = ?";
+        $sql = "SELECT u.*, r.region_code, r.region_name 
+                FROM {$this->table} u 
+                LEFT JOIN regions r ON u.region_id = r.region_id 
+                WHERE user_id = ?";
         $stmt = sqlsrv_query($this->conn, $sql, array($id));
 
         if ($stmt === false) {
@@ -66,7 +72,10 @@ class User
 
     public function getAll()
     {
-        $sql = "SELECT * FROM {$this->table} ORDER BY created_at DESC";
+        $sql = "SELECT u.*, r.region_code, r.region_name 
+                FROM {$this->table} u 
+                LEFT JOIN regions r ON u.region_id = r.region_id 
+                ORDER BY u.created_at DESC";
         $stmt = sqlsrv_query($this->conn, $sql);
 
         $users = array();

@@ -5,6 +5,7 @@
 Aplikasi Anda sekarang menggunakan **stored procedures, functions, views, dan triggers** dari `02_logic_objects.sql`.
 
 ### ✅ Models Updated (6 files)
+
 - `User.php` → menggunakan `sp_InsertUser`
 - `Warehouse.php` → menggunakan `sp_InsertWarehouse`
 - `WarehouseItem.php` → menggunakan `sp_InsertWarehouseItem`
@@ -12,9 +13,11 @@ Aplikasi Anda sekarang menggunakan **stored procedures, functions, views, dan tr
 - `Order.php` → menggunakan `sp_InsertOrder` + `sp_InsertOrderItem` + **NEW** `checkoutFromCart()`
 
 ### ✅ Controllers Updated (1 file)
+
 - `ClientController.php::checkout()` → simplified dengan `sp_CheckoutFromCart_WithCursor`
 
 ### ✅ Database Objects (17 total)
+
 - **11 Stored Procedures**
 - **2 Functions**
 - **3 Views**
@@ -27,10 +30,11 @@ Aplikasi Anda sekarang menggunakan **stored procedures, functions, views, dan tr
 ### 1️⃣ Install Database Logic Objects
 
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
 ```
 
 **Expected output:**
+
 ```
 Dropping old objects...
 Creating function GetNextSequentialID...
@@ -59,34 +63,42 @@ SELECT COUNT(*) FROM sys.triggers;
 ### 3️⃣ Test Aplikasi
 
 #### Test 1: Registration
+
 ```
 http://localhost/distribution/public/register
 ```
+
 - Register user baru
 - Check database: `SELECT * FROM users ORDER BY created_at DESC`
 - Verify: `user_id` format `{REGION}-U-{SEQUENCE}` (e.g., `BDG-U-000001`)
 
 #### Test 2: Warehouse Management
+
 ```
 http://localhost/distribution/public/dashboard/warehouse
 ```
+
 - Login sebagai admin
 - Tambah warehouse baru
 - Check database: `SELECT * FROM warehouses ORDER BY created_at DESC`
 - Verify: `warehouse_id` format `{REGION}-W-{SEQUENCE}`
 
 #### Test 3: Stock Management
+
 ```
 http://localhost/distribution/public/dashboard/warehouse_item
 ```
+
 - Tambah stock ke warehouse
 - Check database: `SELECT * FROM warehouse_items ORDER BY created_at DESC`
 - Verify: `warehouse_item_id` format `{REGION}-WI-{SEQUENCE}`
 
 #### Test 4: Checkout Flow (PENTING!)
+
 ```
 http://localhost/distribution/public/klien
 ```
+
 - Login sebagai user biasa (bukan admin)
 - Tambah produk ke cart
 - Checkout
@@ -101,13 +113,16 @@ http://localhost/distribution/public/klien
 ## 🎯 Keunggulan Sistem Baru
 
 ### 1. Sequential ID Generation (No Collision!)
+
 **Before:** PHP generate random ID → risk collision
+
 ```php
 generateOrderId() → "BDG-O-382910" (random)
 generateOrderId() → "BDG-O-382910" (bisa sama!)
 ```
 
 **After:** Database sequential ID → guaranteed unique
+
 ```sql
 GetNextSequentialID('BDG-O-', 'orders')
 → "BDG-O-000001"
@@ -116,7 +131,9 @@ GetNextSequentialID('BDG-O-', 'orders')
 ```
 
 ### 2. Automatic Stock Reduction
+
 **Before:** Manual call `reduceStock()` di PHP
+
 ```php
 foreach ($cartItems as $item) {
     $this->orderModel->addOrderItem(...);
@@ -125,13 +142,16 @@ foreach ($cartItems as $item) {
 ```
 
 **After:** Trigger otomatis
+
 ```php
 $orderId = $this->orderModel->checkoutFromCart($userId);
 // Trigger auto kurangi stock saat insert order_items
 ```
 
 ### 3. Transaction Safety
+
 **Before:** Manual transaction di PHP
+
 ```php
 try {
     $order = create();
@@ -141,6 +161,7 @@ try {
 ```
 
 **After:** Built-in transaction di stored procedure
+
 ```sql
 BEGIN TRY
     BEGIN TRANSACTION
@@ -154,7 +175,9 @@ END CATCH
 ```
 
 ### 4. Performance Boost
+
 **Checkout flow:**
+
 - **Before:** 20+ database queries (create order + N items + N stock updates + clear cart)
 - **After:** 1 stored procedure call (dengan cursor)
 - **Result:** ~90% reduction in round-trips
@@ -166,15 +189,19 @@ END CATCH
 Semua dokumentasi ada di folder project:
 
 ### 📖 Complete Guide
+
 - `STORED_PROCEDURES_GUIDE.md` - Panduan lengkap implementasi, benefits, syntax examples
 
 ### 🔧 Installation Guide
+
 - `INSTALL_STORED_PROCEDURES.md` - Quick start installation & testing
 
 ### 📋 Changelog
+
 - `CHANGELOG_STORED_PROCEDURES.md` - Detail perubahan code & workflow
 
 ### 💾 SQL Script
+
 - `02_logic_objects.sql` - All database objects (SPs, functions, views, triggers)
 
 ---
@@ -182,7 +209,9 @@ Semua dokumentasi ada di folder project:
 ## ⚠️ Important Notes
 
 ### ✅ Backward Compatible
+
 Semua public method signatures **TIDAK BERUBAH**. Code lama tetap jalan:
+
 ```php
 User::create($data);           // ✅ Still works
 Warehouse::create($data);      // ✅ Still works
@@ -190,6 +219,7 @@ Order::create($userId, $total); // ✅ Still works
 ```
 
 ### 🆕 New Optional Method
+
 ```php
 // NEW: Simplified checkout
 $orderId = $orderModel->checkoutFromCart($userId);
@@ -203,7 +233,9 @@ foreach ($items as $item) {
 ```
 
 ### 🔒 Trigger Behavior
+
 Trigger `trg_OrderItems_AfterInsert_UpdateStock`:
+
 - ✅ Auto kurangi stock saat insert order_items
 - ❌ ROLLBACK jika stock tidak cukup
 - Error message: "Stok tidak cukup untuk salah satu item pesanan."
@@ -215,23 +247,30 @@ Trigger `trg_OrderItems_AfterInsert_UpdateStock`:
 ## 🐛 Troubleshooting
 
 ### Error: "Could not find stored procedure"
+
 **Solution:** Jalankan SQL script:
+
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
 ```
 
 ### Error: "Stok tidak cukup"
+
 **Cause:** Trigger detect insufficient stock
-**Solution:** 
+**Solution:**
+
 - Tambah stock di dashboard warehouse items, atau
 - Kurangi qty di cart
 
 ### Stock tidak berkurang setelah checkout
+
 **Cause:** Trigger belum di-install
 **Solution:** Verify trigger exists:
+
 ```sql
 SELECT * FROM sys.triggers WHERE name = 'trg_OrderItems_AfterInsert_UpdateStock';
 ```
+
 If not found, re-run `02_logic_objects.sql`.
 
 ---
@@ -254,6 +293,7 @@ Sebelum deploy production:
 ## 🎊 Selesai!
 
 Aplikasi Anda sekarang menggunakan **best practices** untuk distributed system dengan:
+
 - ✅ Sequential distributed IDs (no collision)
 - ✅ Automatic stock management (via triggers)
 - ✅ Transaction-safe operations (via stored procedures)

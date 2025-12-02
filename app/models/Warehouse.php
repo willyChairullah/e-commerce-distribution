@@ -40,7 +40,10 @@ class Warehouse
 
     public function getAll()
     {
-        $sql = "SELECT * FROM {$this->table} ORDER BY warehouse_name";
+        $sql = "SELECT w.*, r.region_code, r.region_name 
+                FROM {$this->table} w 
+                LEFT JOIN regions r ON w.region_id = r.region_id 
+                ORDER BY warehouse_name";
         $stmt = sqlsrv_query($this->conn, $sql);
 
         if ($stmt === false) {
@@ -58,7 +61,10 @@ class Warehouse
 
     public function findById($id)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE warehouse_id = ?";
+        $sql = "SELECT w.*, r.region_code, r.region_name 
+                FROM {$this->table} w 
+                LEFT JOIN regions r ON w.region_id = r.region_id 
+                WHERE warehouse_id = ?";
         $stmt = sqlsrv_query($this->conn, $sql, array($id));
 
         if ($stmt === false) {
@@ -71,13 +77,28 @@ class Warehouse
 
     public function update($id, $data)
     {
+        // Lookup region_id from region_code
+        $sqlRegion = "SELECT region_id FROM regions WHERE region_code = ?";
+        $stmtRegion = sqlsrv_query($this->conn, $sqlRegion, array($data['region_code']));
+        
+        if ($stmtRegion === false) {
+            error_log("SQL Error in Warehouse::update (lookup region): " . print_r(sqlsrv_errors(), true));
+            return false;
+        }
+        
+        $regionRow = sqlsrv_fetch_array($stmtRegion, SQLSRV_FETCH_ASSOC);
+        if (!$regionRow) {
+            error_log("Invalid region_code: " . $data['region_code']);
+            return false;
+        }
+        
         $sql = "UPDATE {$this->table} 
-                SET warehouse_name = ?, region_code = ?, address = ? 
+                SET warehouse_name = ?, region_id = ?, address = ? 
                 WHERE warehouse_id = ?";
 
         $params = array(
             $data['warehouse_name'],
-            $data['region_code'],
+            $regionRow['region_id'],
             $data['address'],
             $id
         );
@@ -95,11 +116,11 @@ class Warehouse
 
     public function getTotalWarehouses($regionCode = null)
     {
-        $sql = "SELECT COUNT(*) as total FROM {$this->table}";
+        $sql = "SELECT COUNT(*) as total FROM {$this->table} w";
         $params = array();
         
         if ($regionCode !== null) {
-            $sql .= " WHERE region_code = ?";
+            $sql .= " LEFT JOIN regions r ON w.region_id = r.region_id WHERE r.region_code = ?";
             $params[] = $regionCode;
         }
         
@@ -110,11 +131,13 @@ class Warehouse
 
     public function getAllByRegion($regionCode = null)
     {
-        $sql = "SELECT * FROM {$this->table}";
+        $sql = "SELECT w.*, r.region_code, r.region_name 
+                FROM {$this->table} w 
+                LEFT JOIN regions r ON w.region_id = r.region_id";
         $params = array();
         
         if ($regionCode !== null) {
-            $sql .= " WHERE region_code = ?";
+            $sql .= " WHERE r.region_code = ?";
             $params[] = $regionCode;
         }
         

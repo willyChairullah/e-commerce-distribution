@@ -65,13 +65,14 @@ class Order
 
     public function getAll($regionCode = null)
     {
-        $sql = "SELECT o.*, u.full_name, u.email, u.region_code 
+        $sql = "SELECT o.*, u.full_name, u.email, r.region_code, r.region_name 
                 FROM {$this->orderTable} o
-                LEFT JOIN users u ON o.user_id = u.user_id";
+                LEFT JOIN users u ON o.user_id = u.user_id
+                LEFT JOIN regions r ON u.region_id = r.region_id";
         
         $params = array();
         if ($regionCode !== null) {
-            $sql .= " WHERE u.region_code = ?";
+            $sql .= " WHERE r.region_code = ?";
             $params[] = $regionCode;
         }
         
@@ -113,9 +114,10 @@ class Order
 
     public function findById($orderId)
     {
-        $sql = "SELECT o.*, u.full_name, u.email, u.region_code 
+        $sql = "SELECT o.*, u.full_name, u.email, r.region_code, r.region_name 
                 FROM {$this->orderTable} o
                 LEFT JOIN users u ON o.user_id = u.user_id
+                LEFT JOIN regions r ON u.region_id = r.region_id
                 WHERE o.order_id = ?";
         $stmt = sqlsrv_query($this->conn, $sql, array($orderId));
 
@@ -157,7 +159,7 @@ class Order
         $params = array();
         
         if ($regionCode !== null) {
-            $sql .= " LEFT JOIN users u ON o.user_id = u.user_id WHERE u.region_code = ?";
+            $sql .= " LEFT JOIN users u ON o.user_id = u.user_id LEFT JOIN regions r ON u.region_id = r.region_id WHERE r.region_code = ?";
             $params[] = $regionCode;
         }
         

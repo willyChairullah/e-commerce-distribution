@@ -45,7 +45,7 @@ Edit `config/database.php`:
 
 ```php
 private $host = "localhost";           // Your SQL Server host
-private $database = "warehouse_db";    // Database name
+private $database = "warehouse_3";    // Database name
 private $username = "sa";              // Your username
 private $password = "YOUR_PASSWORD";   // Your password
 ```

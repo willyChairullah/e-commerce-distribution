@@ -5,10 +5,11 @@
 ### 1️⃣ Install Logic Objects (Functions, SPs, Views, Triggers)
 
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
 ```
 
 **Output yang diharapkan:**
+
 ```
 Dropping old objects...
 Creating functions...
@@ -28,6 +29,7 @@ SELECT name FROM sys.procedures WHERE name LIKE 'sp_%';
 ```
 
 Expected output:
+
 - sp_CheckoutFromCart_WithCursor
 - sp_GetCartByUser
 - sp_GetOrderDetail
@@ -45,6 +47,7 @@ SELECT name FROM sys.objects WHERE type = 'FN';
 ```
 
 Expected output:
+
 - fn_GetRegionFromUserId
 - GetNextSequentialID
 
@@ -54,6 +57,7 @@ SELECT name FROM sys.views WHERE name LIKE 'v_%';
 ```
 
 Expected output:
+
 - v_CartDetails
 - v_UserOrdersSummary
 - v_WarehouseStockDetail
@@ -64,6 +68,7 @@ SELECT name FROM sys.triggers;
 ```
 
 Expected output:
+
 - trg_OrderItems_AfterInsert_UpdateStock
 
 ---
@@ -71,22 +76,25 @@ Expected output:
 ### 3️⃣ Test Fungsi Dasar
 
 #### Test Function GetNextSequentialID
+
 ```sql
 SELECT dbo.GetNextSequentialID('BDG-U-', 'users');
 -- Output: BDG-U-000001 (atau sequence berikutnya)
 ```
 
 #### Test View
+
 ```sql
 SELECT * FROM v_WarehouseStockDetail;
 -- Harus menampilkan data warehouse + stock + products
 ```
 
 #### Test Stored Procedure
+
 ```sql
 -- Test insert user
 DECLARE @new_user_id VARCHAR(50);
-EXEC sp_InsertUser 
+EXEC sp_InsertUser
     @full_name = 'Test User',
     @email = 'test123@example.com',
     @password = 'hashed_password_here',
@@ -106,10 +114,12 @@ SELECT * FROM users WHERE user_id = @new_user_id;
 ### 4️⃣ Test Aplikasi
 
 1. **Register User Baru:**
+
    - http://localhost/distribution/public/register
    - Check database: ID harus format `{REGION}-U-{SEQUENCE}`
 
 2. **Login sebagai Admin:**
+
    - Dashboard → Warehouse → Tambah warehouse baru
    - Dashboard → Warehouse Items → Tambah stock
    - Verify IDs menggunakan stored procedures
@@ -130,15 +140,17 @@ SELECT * FROM users WHERE user_id = @new_user_id;
 ### Error: "Could not find stored procedure 'sp_InsertUser'"
 
 **Solusi:** Jalankan ulang script instalasi:
+
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
 ```
 
 ### Error: "Stok tidak cukup untuk salah satu item pesanan"
 
 **Penyebab:** Trigger `trg_OrderItems_AfterInsert_UpdateStock` detect stock tidak cukup
 
-**Solusi:** 
+**Solusi:**
+
 - Tambah stock di warehouse_items
 - Atau kurangi qty di cart
 
@@ -147,6 +159,7 @@ sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_logic_
 **Penyebab:** Lupa `sqlsrv_free_stmt($stmt);`
 
 **Solusi:** Pastikan code menggunakan pattern ini:
+
 ```php
 $stmt = sqlsrv_query($conn, $sql, $params);
 if ($stmt === false) {

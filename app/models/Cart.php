@@ -59,11 +59,12 @@ class Cart
     public function getByUser($userId)
     {
         $sql = "SELECT ci.*, wi.stock, p.product_name, p.price, p.photo_url, 
-                       w.warehouse_name, w.region_code
+                       w.warehouse_name, r.region_code, r.region_name
                 FROM {$this->table} ci
                 LEFT JOIN warehouse_items wi ON ci.warehouse_item_id = wi.warehouse_item_id
                 LEFT JOIN products p ON wi.product_id = p.product_id
                 LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
+                LEFT JOIN regions r ON w.region_id = r.region_id
                 WHERE ci.user_id = ?
                 ORDER BY ci.created_at DESC";
         $stmt = sqlsrv_query($this->conn, $sql, array($userId));

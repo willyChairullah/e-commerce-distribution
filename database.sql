@@ -1,11 +1,11 @@
 -- Create Database
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'warehouse_db')
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'warehouse_3')
 BEGIN
-    CREATE DATABASE warehouse_db;
+    CREATE DATABASE warehouse_3;
 END
 GO
 
-USE warehouse_db;
+USE warehouse_3;
 GO
 
 /* ============================================

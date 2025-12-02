@@ -52,7 +52,7 @@ if (isCentralMode()) {
 ### Test 1: Manual via SQL (✅ PASSED)
 
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -Q "
+sqlcmd -S localhost -d warehouse_3 -E -Q "
 DECLARE @new_user_id VARCHAR(50);
 EXEC sp_InsertUser
     @full_name='Test User',
@@ -143,10 +143,10 @@ SELECT @new_user_id;
 
 ```powershell
 # Check if SP exists
-sqlcmd -S localhost -d warehouse_db -E -Q "SELECT name FROM sys.procedures WHERE name='sp_InsertUser'"
+sqlcmd -S localhost -d warehouse_3 -E -Q "SELECT name FROM sys.procedures WHERE name='sp_InsertUser'"
 
 # If not found, install logic objects
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
 ```
 
 ---

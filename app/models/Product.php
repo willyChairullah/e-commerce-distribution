@@ -145,7 +145,8 @@ class Product
                 FROM {$this->table} p 
                 LEFT JOIN categories c ON p.category_id = c.category_id
                 LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
-                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id AND w.region_code = ?
+                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
+                LEFT JOIN regions r ON w.region_id = r.region_id AND r.region_code = ?
                 GROUP BY p.product_id, p.product_name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
                 HAVING SUM(wi.stock) > 0 OR SUM(wi.stock) IS NULL
                 ORDER BY p.created_at DESC";
@@ -181,7 +182,8 @@ class Product
                 FROM {$this->table} p 
                 LEFT JOIN categories c ON p.category_id = c.category_id
                 LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
-                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id AND w.region_code = ?
+                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
+                LEFT JOIN regions r ON w.region_id = r.region_id AND r.region_code = ?
                 WHERE p.category_id = ?
                 GROUP BY p.product_id, p.product_name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
                 HAVING SUM(wi.stock) > 0

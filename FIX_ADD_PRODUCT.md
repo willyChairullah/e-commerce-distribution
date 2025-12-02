@@ -11,7 +11,7 @@ Gagal menambahkan produk dari dashboard karena database tidak memiliki kolom `ph
 Jika Anda belum punya data penting, jalankan script ini untuk setup lengkap:
 
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\01_schema_base.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\01_schema_base.sql"
 ```
 
 **Script ini akan:**
@@ -28,7 +28,7 @@ sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\01_schema
 Jika sudah punya data dan tidak ingin kehilangan, jalankan script ALTER ini:
 
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_alter_add_columns.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\02_alter_add_columns.sql"
 ```
 
 **Script ini akan:**

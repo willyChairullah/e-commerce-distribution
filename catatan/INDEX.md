@@ -172,7 +172,7 @@
 
 ### Q: Bagaimana cara install?
 
-**A:** Run: `sqlcmd -S localhost -d warehouse_db -E -i "02_logic_objects.sql"`
+**A:** Run: `sqlcmd -S localhost -d warehouse_3 -E -i "02_logic_objects.sql"`
 
 ### Q: Trigger tidak jalan, kenapa stock tidak berkurang?
 

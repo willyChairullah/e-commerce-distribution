@@ -15,8 +15,17 @@ ob_start();
         </div>
 
         <div class="form-group">
-            <label>Region Code</label>
-            <input type="text" name="region_code" value="<?php echo isset($warehouse) ? $warehouse['region_code'] : ''; ?>" required>
+            <label>Region</label>
+            <select name="region_code" required>
+                <option value="">-- Pilih Region --</option>
+                <?php
+                $regions = AVAILABLE_REGIONS;
+                foreach ($regions as $code => $name) {
+                    $selected = (isset($warehouse) && $warehouse['region_code'] == $code) ? 'selected' : '';
+                    echo "<option value='{$code}' {$selected}>{$name}</option>";
+                }
+                ?>
+            </select>
         </div>
 
         <div class="form-group">

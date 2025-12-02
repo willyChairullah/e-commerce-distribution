@@ -1,14 +1,14 @@
 Siap, kita rapikan jadi **script terpisah** khusus:
 
-* VIEW
-* FUNCTION (tambahan)
-* STORED PROCEDURE (tambahan, termasuk yang pakai CURSOR)
-* TRIGGER
+- VIEW
+- FUNCTION (tambahan)
+- STORED PROCEDURE (tambahan, termasuk yang pakai CURSOR)
+- TRIGGER
 
 Lalu di bawahnya aku jelaskan:
 
-* Dipakai di **halaman apa** di aplikasi
-* Contoh **PHP native** (pakai `sqlsrv` untuk SQL Server)
+- Dipakai di **halaman apa** di aplikasi
+- Contoh **PHP native** (pakai `sqlsrv` untuk SQL Server)
 
 > Script ini **tidak membuat tabel lagi**. Dia mengasumsikan kamu sudah menjalankan script utama yang bikin tabel + SP insert + function `GetNextSequentialID` sebelumnya.
 
@@ -17,7 +17,7 @@ Lalu di bawahnya aku jelaskan:
 ## 🔹 1. SQL – File Terpisah (misal: `extra_db_objects.sql`)
 
 ```sql
-USE warehouse_db;
+USE warehouse_3;
 GO
 /* =====================================================
    1) FUNCTION TAMBAHAN
@@ -55,7 +55,7 @@ GO
 
 CREATE VIEW dbo.v_UserOrdersSummary
 AS
-SELECT 
+SELECT
     u.user_id,
     u.full_name,
     u.email,
@@ -65,7 +65,7 @@ SELECT
 FROM dbo.users u
 LEFT JOIN dbo.orders o
     ON u.user_id = o.user_id
-GROUP BY 
+GROUP BY
     u.user_id, u.full_name, u.email, u.region_code;
 GO
 
@@ -180,7 +180,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT 
+    SELECT
         o.order_id,
         o.order_date,
         o.total_amount
@@ -203,7 +203,7 @@ BEGIN
     SET NOCOUNT ON;
 
     -- Header order
-    SELECT 
+    SELECT
         o.order_id,
         o.user_id,
         u.full_name,
@@ -214,7 +214,7 @@ BEGIN
     WHERE o.order_id = @order_id;
 
     -- Detail item
-    SELECT 
+    SELECT
         oi.order_item_id,
         oi.warehouse_item_id,
         w.warehouse_id,
@@ -275,7 +275,7 @@ BEGIN
     DECLARE @tmp_order_id VARCHAR(50);
 
     -- Hitung total_amount dari cart user
-    SELECT 
+    SELECT
         @total_amount = SUM(p.price * c.qty)
     FROM dbo.cart_items c
     JOIN dbo.warehouse_items wi
@@ -300,14 +300,14 @@ BEGIN
             @new_order_id  = @tmp_order_id OUTPUT;
 
         -- Cursor untuk iterasi cart user → buat order_items
-        DECLARE 
+        DECLARE
             @cart_item_id      VARCHAR(50),
             @warehouse_item_id VARCHAR(50),
             @qty               INT,
             @price_at_order    DECIMAL(10,2);
 
         DECLARE cart_cursor CURSOR LOCAL FAST_FORWARD FOR
-            SELECT 
+            SELECT
                 c.cart_item_id,
                 c.warehouse_item_id,
                 c.qty,
@@ -369,16 +369,16 @@ Contoh arsitektur sederhana:
 
 1. **View**
 
-   * `v_WarehouseStockDetail` →
+   - `v_WarehouseStockDetail` →
      Halaman **Admin – Manajemen Stok** / **Daftar Stok Gudang**.
-   * `v_CartDetails` →
+   - `v_CartDetails` →
      Halaman **Cart** user (tampilan isi keranjang).
-   * `v_UserOrdersSummary` →
+   - `v_UserOrdersSummary` →
      Halaman **Admin – Dashboard User** (lihat total belanja user).
 
 2. **Function**
 
-   * `fn_GetRegionFromUserId` →
+   - `fn_GetRegionFromUserId` →
      Dipakai di query laporan, misal di **Admin – Laporan Penjualan per Region**:
 
      ```sql
@@ -389,22 +389,22 @@ Contoh arsitektur sederhana:
 
 3. **Stored Procedure**
 
-   * `sp_InsertUser` → Halaman **Register / Admin tambah user**.
-   * `sp_InsertWarehouse`, `sp_InsertWarehouseItem` → **Admin – Manajemen Gudang & Stok**.
-   * `sp_GetCartByUser` → **Halaman Cart**.
-   * `sp_GetUserOrders`, `sp_GetOrderDetail` → **Riwayat Pesanan**, **Detail Pesanan**.
-   * `sp_CheckoutFromCart_WithCursor` → **Halaman Checkout** (tombol “Buat Pesanan”).
+   - `sp_InsertUser` → Halaman **Register / Admin tambah user**.
+   - `sp_InsertWarehouse`, `sp_InsertWarehouseItem` → **Admin – Manajemen Gudang & Stok**.
+   - `sp_GetCartByUser` → **Halaman Cart**.
+   - `sp_GetUserOrders`, `sp_GetOrderDetail` → **Riwayat Pesanan**, **Detail Pesanan**.
+   - `sp_CheckoutFromCart_WithCursor` → **Halaman Checkout** (tombol “Buat Pesanan”).
 
 4. **Trigger**
 
-   * `trg_OrderItems_AfterInsert_UpdateStock` →
+   - `trg_OrderItems_AfterInsert_UpdateStock` →
      Aktif **otomatis** setiap ada insert ke `order_items`, biasanya saat:
 
-     * SP `sp_InsertOrderItem` dipanggil di proses **checkout**.
+     - SP `sp_InsertOrderItem` dipanggil di proses **checkout**.
 
 5. **Cursor**
 
-   * Dipakai di dalam `sp_CheckoutFromCart_WithCursor` →
+   - Dipakai di dalam `sp_CheckoutFromCart_WithCursor` →
      Proses **checkout** untuk membaca setiap row cart dan bikin `order_items`.
 
 ---
@@ -417,7 +417,7 @@ Contoh arsitektur sederhana:
 <?php
 $serverName = "localhost";
 $connectionOptions = [
-    "Database" => "warehouse_db",
+    "Database" => "warehouse_3",
     "Uid"      => "sa",
     "PWD"      => "password_kamu"
 ];
@@ -598,5 +598,5 @@ if ($stmt === false) {
 
 Kalau kamu mau, next step kita bisa:
 
-* Bikin **diagram** sederhana: flow dari `cart` → `checkout` → `orders`.
-* Atau aku bantu mapping kode PHP kamu yang sudah ada ke SP/SP di atas (biar nggak perlu rewrite dari nol).
+- Bikin **diagram** sederhana: flow dari `cart` → `checkout` → `orders`.
+- Atau aku bantu mapping kode PHP kamu yang sudah ada ke SP/SP di atas (biar nggak perlu rewrite dari nol).

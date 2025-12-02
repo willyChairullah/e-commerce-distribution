@@ -6,7 +6,7 @@
 
 ```sql
 -- Backup database sebelum modifikasi
-BACKUP DATABASE warehouse_db TO DISK = 'E:\backup\warehouse_db_before_regional.bak'
+BACKUP DATABASE warehouse_3 TO DISK = 'E:\backup\warehouse_3_before_regional.bak'
 ```
 
 ### 2. Jalankan Migration SQL

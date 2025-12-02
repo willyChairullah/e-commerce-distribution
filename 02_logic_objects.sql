@@ -1,4 +1,4 @@
-USE warehouse_db;
+USE warehouse_3;
 GO
 
 /* =====================================================
@@ -145,11 +145,21 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
+    -- Lookup region_id from region_code
+    DECLARE @region_id INT;
+    SELECT @region_id = region_id FROM dbo.regions WHERE region_code = @region_code;
+    
+    IF @region_id IS NULL
+    BEGIN
+        RAISERROR('Region code tidak valid: %s', 16, 1, @region_code);
+        RETURN;
+    END;
+    
     DECLARE @prefix VARCHAR(20) = @region_code + '-U-';
     SET @new_user_id = dbo.GetNextSequentialID(@prefix, 'users');
     
-    INSERT INTO dbo.users (user_id, full_name, email, password, region_code, is_admin, created_at)
-    VALUES (@new_user_id, @full_name, @email, @password, @region_code, @is_admin, GETDATE());
+    INSERT INTO dbo.users (user_id, full_name, email, password, region_id, is_admin, created_at)
+    VALUES (@new_user_id, @full_name, @email, @password, @region_id, @is_admin, GETDATE());
 END;
 GO
 
@@ -163,11 +173,21 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
+    -- Lookup region_id from region_code
+    DECLARE @region_id INT;
+    SELECT @region_id = region_id FROM dbo.regions WHERE region_code = @region_code;
+    
+    IF @region_id IS NULL
+    BEGIN
+        RAISERROR('Region code tidak valid: %s', 16, 1, @region_code);
+        RETURN;
+    END;
+    
     DECLARE @prefix VARCHAR(20) = @region_code + '-W-';
     SET @new_warehouse_id = dbo.GetNextSequentialID(@prefix, 'warehouses');
     
-    INSERT INTO dbo.warehouses (warehouse_id, warehouse_name, region_code, address, created_at)
-    VALUES (@new_warehouse_id, @warehouse_name, @region_code, @address, GETDATE());
+    INSERT INTO dbo.warehouses (warehouse_id, warehouse_name, region_id, address, created_at)
+    VALUES (@new_warehouse_id, @warehouse_name, @region_id, @address, GETDATE());
 END;
 GO
 
@@ -266,14 +286,17 @@ SELECT
     u.user_id,
     u.full_name,
     u.email,
-    u.region_code,
+    r.region_code,
+    r.region_name,
     COUNT(o.order_id)                AS total_orders,
     ISNULL(SUM(o.total_amount), 0)   AS total_spent
 FROM dbo.users u
+LEFT JOIN dbo.regions r
+    ON u.region_id = r.region_id
 LEFT JOIN dbo.orders o
     ON u.user_id = o.user_id
 GROUP BY 
-    u.user_id, u.full_name, u.email, u.region_code;
+    u.user_id, u.full_name, u.email, r.region_code, r.region_name;
 GO
 
 -- v_WarehouseStockDetail
@@ -282,7 +305,8 @@ AS
 SELECT
     w.warehouse_id,
     w.warehouse_name,
-    w.region_code,
+    r.region_code,
+    r.region_name,
     wi.warehouse_item_id,
     wi.product_id,
     p.product_name,
@@ -290,6 +314,8 @@ SELECT
     wi.stock,
     wi.created_at AS added_at
 FROM dbo.warehouses w
+LEFT JOIN dbo.regions r
+    ON w.region_id = r.region_id
 JOIN dbo.warehouse_items wi
     ON w.warehouse_id = wi.warehouse_id
 JOIN dbo.products p

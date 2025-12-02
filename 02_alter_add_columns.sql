@@ -3,7 +3,7 @@
 -- Untuk menambahkan kolom tanpa DROP data
 -- ============================================
 
-USE warehouse_db;
+USE warehouse_3;
 GO
 
 PRINT 'Adding categories table if not exists...';

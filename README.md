@@ -81,14 +81,14 @@ project/
 
    - Buka SQL Server Management Studio (SSMS)
    - Jalankan script `database.sql`
-   - Database `warehouse_db` akan terbuat otomatis
+   - Database `warehouse_3` akan terbuat otomatis
 
 3. **Konfigurasi Database**
    Edit file `config/database.php`:
 
    ```php
    private $host = "localhost";
-   private $database = "warehouse_db";
+   private $database = "warehouse_3";
    private $username = "sa";
    private $password = "your_password";
    ```
@@ -230,4 +230,5 @@ Project ini dibuat untuk keperluan pembelajaran.
 - Rate limiting
 - HTTPS only
 - Environment variables untuk konfigurasi
+
 # e-commerce-distribution

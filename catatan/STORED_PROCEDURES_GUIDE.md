@@ -13,14 +13,16 @@ Aplikasi ini sekarang menggunakan **stored procedures, functions, views, dan tri
 Semua operasi INSERT sekarang menggunakan stored procedures dengan **OUTPUT parameter** untuk mendapatkan distributed ID:
 
 #### 📌 User Registration
+
 ```php
 // File: app/models/User.php
-User::create($data) 
+User::create($data)
 // Memanggil: sp_InsertUser
 // Output: user_id (format: BDG-U-000001)
 ```
 
 #### 📌 Warehouse Creation
+
 ```php
 // File: app/models/Warehouse.php
 Warehouse::create($data)
@@ -29,6 +31,7 @@ Warehouse::create($data)
 ```
 
 #### 📌 Warehouse Item (Stock) Creation
+
 ```php
 // File: app/models/WarehouseItem.php
 WarehouseItem::create($data)
@@ -37,6 +40,7 @@ WarehouseItem::create($data)
 ```
 
 #### 📌 Cart Item Addition
+
 ```php
 // File: app/models/Cart.php
 Cart::add($data)
@@ -45,6 +49,7 @@ Cart::add($data)
 ```
 
 #### 📌 Order Creation
+
 ```php
 // File: app/models/Order.php
 Order::create($userId, $totalAmount)
@@ -53,6 +58,7 @@ Order::create($userId, $totalAmount)
 ```
 
 #### 📌 Order Item Creation
+
 ```php
 // File: app/models/Order.php
 Order::addOrderItem($orderId, $warehouseItemId, $qty, $price)
@@ -91,6 +97,7 @@ $orderId = $this->orderModel->checkoutFromCart($userId);
 ```
 
 **Keuntungan:**
+
 - ✅ Transactional (semua atau tidak sama sekali)
 - ✅ Stock reduction otomatis via trigger
 - ✅ Error handling built-in
@@ -101,7 +108,9 @@ $orderId = $this->orderModel->checkoutFromCart($userId);
 ### 3. **Database Functions**
 
 #### 📌 GetNextSequentialID
+
 Function untuk generate ID dengan sequence:
+
 ```sql
 GetNextSequentialID('BDG-U-', 'users')
 -- Returns: BDG-U-000001, BDG-U-000002, dst.
@@ -110,7 +119,9 @@ GetNextSequentialID('BDG-U-', 'users')
 Digunakan oleh semua stored procedures untuk generate distributed ID.
 
 #### 📌 fn_GetRegionFromUserId
+
 Extract region dari user_id:
+
 ```sql
 fn_GetRegionFromUserId('JKT-U-000001')
 -- Returns: JKT
@@ -121,12 +132,15 @@ fn_GetRegionFromUserId('JKT-U-000001')
 ### 4. **Views**
 
 #### 📌 v_UserOrdersSummary
+
 Menampilkan summary orders per user:
+
 ```sql
 SELECT * FROM v_UserOrdersSummary;
 ```
 
 Output:
+
 - user_id
 - full_name
 - email
@@ -135,12 +149,15 @@ Output:
 - total_spent
 
 #### 📌 v_WarehouseStockDetail
+
 Menampilkan detail stok per warehouse dengan join products:
+
 ```sql
 SELECT * FROM v_WarehouseStockDetail WHERE region_code = 'BDG';
 ```
 
 Output:
+
 - warehouse_id, warehouse_name, region_code
 - warehouse_item_id
 - product_id, product_name, price
@@ -148,12 +165,15 @@ Output:
 - added_at
 
 #### 📌 v_CartDetails
+
 Menampilkan cart dengan full details:
+
 ```sql
 SELECT * FROM v_CartDetails WHERE user_id = 'BDG-U-000001';
 ```
 
 Output:
+
 - cart_item_id, user_id, full_name
 - warehouse_item_id, warehouse_id, warehouse_name
 - product_id, product_name, price
@@ -183,7 +203,7 @@ Trigger otomatis ketika `order_items` di-INSERT:
 ### 1. Jalankan SQL Script
 
 ```powershell
-sqlcmd -S localhost -d warehouse_db -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
+sqlcmd -S localhost -d warehouse_3 -E -i "E:\laragon\www\distribution\02_logic_objects.sql"
 ```
 
 ### 2. Verifikasi Installation
@@ -207,16 +227,19 @@ SELECT name FROM sys.triggers;
 ## 🧪 Testing Guide
 
 ### Test 1: User Registration
+
 1. Register user baru
 2. Check database: `SELECT * FROM users WHERE email = 'test@example.com'`
 3. Verify: user_id format `{REGION}-U-{SEQUENCE}`
 
 ### Test 2: Warehouse & Stock Creation
+
 1. Dashboard → Warehouse → Add New
 2. Dashboard → Warehouse Items → Add Stock
 3. Verify: IDs menggunakan format distributed
 
 ### Test 3: Checkout Flow dengan Cursor SP
+
 1. Login sebagai user biasa
 2. Tambah item ke cart
 3. Checkout
@@ -227,6 +250,7 @@ SELECT name FROM sys.triggers;
    - Cart ter-clear
 
 ### Test 4: Views
+
 ```sql
 -- Test user summary
 SELECT * FROM v_UserOrdersSummary;
@@ -242,19 +266,20 @@ SELECT * FROM v_CartDetails WHERE user_id = 'BDG-U-000001';
 
 ## 📊 Performance Benefits
 
-| Operation | Before (PHP Logic) | After (Stored Procedures) |
-|-----------|-------------------|---------------------------|
-| **Checkout** | 20+ DB calls | 1 SP call (dengan cursor) |
-| **ID Generation** | PHP random (risk collision) | DB sequential (guaranteed unique) |
-| **Stock Reduction** | Manual PHP call | Automatic via trigger |
-| **Transaction Safety** | Manual BEGIN/COMMIT | Built-in SP transaction |
-| **Error Handling** | Try-catch di PHP | RAISERROR + ROLLBACK di SP |
+| Operation              | Before (PHP Logic)          | After (Stored Procedures)         |
+| ---------------------- | --------------------------- | --------------------------------- |
+| **Checkout**           | 20+ DB calls                | 1 SP call (dengan cursor)         |
+| **ID Generation**      | PHP random (risk collision) | DB sequential (guaranteed unique) |
+| **Stock Reduction**    | Manual PHP call             | Automatic via trigger             |
+| **Transaction Safety** | Manual BEGIN/COMMIT         | Built-in SP transaction           |
+| **Error Handling**     | Try-catch di PHP            | RAISERROR + ROLLBACK di SP        |
 
 ---
 
 ## ⚠️ Important Notes
 
 ### OUTPUT Parameter Syntax
+
 ```php
 // Correct syntax untuk SQL Server OUTPUT parameters:
 $newId = '';
@@ -270,11 +295,13 @@ sqlsrv_free_stmt($stmt); // Important!
 ```
 
 ### Trigger Behavior
+
 - Trigger `trg_OrderItems_AfterInsert_UpdateStock` akan **ROLLBACK** transaction jika stok tidak cukup
 - Error message: "Stok tidak cukup untuk salah satu item pesanan."
 - Pastikan error handling di PHP menangkap ini
 
 ### Sequential ID vs Random ID
+
 - **Sequential ID (via SP):** Konsisten, no collision, lebih mudah tracking
 - **Random ID (PHP):** Risk collision, perlu unique constraint + retry logic
 
@@ -285,15 +312,18 @@ sqlsrv_free_stmt($stmt); // Important!
 ### Potential Enhancements
 
 1. **Add More SPs:**
+
    - `sp_UpdateWarehouseStock` (bulk stock update)
    - `sp_CancelOrder` (return stock, update status)
    - `sp_GetLowStockItems` (alert stok menipis)
 
 2. **Optimize Views:**
+
    - Add indexed views untuk report besar
    - Create materialized views untuk dashboard
 
 3. **Add More Triggers:**
+
    - `trg_Orders_AfterUpdate_LogStatus` (audit trail)
    - `trg_WarehouseItems_BeforeDelete_CheckOrders` (prevent delete if used)
 

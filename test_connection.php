@@ -29,14 +29,14 @@ try {
         }
 
         // Check if database exists
-        $sql = "SELECT name FROM sys.databases WHERE name = 'warehouse_db'";
+        $sql = "SELECT name FROM sys.databases WHERE name = 'warehouse_3'";
         $stmt = sqlsrv_query($conn, $sql);
 
         if ($stmt && sqlsrv_has_rows($stmt)) {
-            echo "✓ Database 'warehouse_db' exists\n\n";
+            echo "✓ Database 'warehouse_3' exists\n\n";
 
             // Check tables
-            $sql = "SELECT TABLE_NAME FROM warehouse_db.INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+            $sql = "SELECT TABLE_NAME FROM warehouse_3.INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
             $stmt = sqlsrv_query($conn, $sql);
 
             echo "Tables found:\n";
@@ -44,7 +44,7 @@ try {
                 echo "  - " . $row['TABLE_NAME'] . "\n";
             }
         } else {
-            echo "✗ Database 'warehouse_db' not found\n";
+            echo "✗ Database 'warehouse_3' not found\n";
             echo "  Please run database.sql script first\n";
         }
 

@@ -47,7 +47,7 @@ Laptop 1 (Central): Bisa merge semua data tanpa bentrok
 
 ```sql
 -- Jalankan di SQL Server Management Studio atau Azure Data Studio
-sqlcmd -S localhost -d warehouse_db -E -i database_distributed_id.sql
+sqlcmd -S localhost -d warehouse_3 -E -i database_distributed_id.sql
 ```
 
 **PENTING:** Script akan otomatis:
