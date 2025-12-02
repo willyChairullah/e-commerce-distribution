@@ -38,7 +38,20 @@
                     <input type="password" name="password" required minlength="6">
                 </div>
 
-                <?php if (!isCentralMode()): ?>
+                <?php if (isCentralMode()): ?>
+                    <!-- Central mode: user harus pilih region -->
+                    <div class="form-group">
+                        <label>Pilih Region <span style="color: red;">*</span></label>
+                        <select name="region_code" required>
+                            <option value="">-- Pilih Region --</option>
+                            <?php foreach (AVAILABLE_REGIONS as $code => $name): ?>
+                                <option value="<?php echo $code; ?>"><?php echo $name; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small style="color: #666;">Pilih region domisili Anda</small>
+                    </div>
+                <?php else: ?>
+                    <!-- Regional mode: region auto-detect dari server -->
                     <div class="form-group">
                         <label>Region</label>
                         <input type="text" value="<?php echo getRegionName(); ?>" disabled style="background: #f5f5f5;">

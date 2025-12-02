@@ -27,7 +27,7 @@ ob_start();
                 <option value="">Pilih Produk</option>
                 <?php foreach ($products as $product): ?>
                     <option value="<?php echo $product['product_id']; ?>">
-                        <?php echo $product['name']; ?>
+                        <?php echo $product['product_name']; ?>
                     </option>
                 <?php endforeach; ?>
             </select>

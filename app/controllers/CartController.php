@@ -34,7 +34,7 @@ class CartController
         requireLogin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $warehouseItemId = intval($_POST['warehouse_item_id']);
+            $warehouseItemId = sanitize($_POST['warehouse_item_id']); // VARCHAR now
             $qty = intval($_POST['qty']);
 
             // Check stock availability
@@ -65,7 +65,7 @@ class CartController
         requireLogin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $cartItemId = intval($_POST['cart_item_id']);
+            $cartItemId = sanitize($_POST['cart_item_id']); // VARCHAR now
             $qty = intval($_POST['qty']);
 
             if ($qty <= 0) {
@@ -81,7 +81,13 @@ class CartController
     public function delete()
     {
         requireLogin();
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $id = isset($_GET['id']) ? sanitize($_GET['id']) : '';
+
+        if (empty($id)) {
+            $_SESSION['error'] = 'ID tidak valid';
+            redirect('/klien/keranjang');
+            return;
+        }
 
         if ($this->cartModel->delete($id)) {
             $_SESSION['success'] = 'Item dihapus dari keranjang';

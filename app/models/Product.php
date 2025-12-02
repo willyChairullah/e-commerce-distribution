@@ -16,7 +16,7 @@ class Product
 
     public function create($data)
     {
-        $sql = "INSERT INTO {$this->table} (name, price, photo_url, category_id, created_at) 
+        $sql = "INSERT INTO {$this->table} (product_name, price, photo_url, category_id, created_at) 
                 VALUES (?, ?, ?, ?, GETDATE())";
 
         $params = array(
@@ -38,6 +38,12 @@ class Product
                 ORDER BY p.created_at DESC";
         $stmt = sqlsrv_query($this->conn, $sql);
 
+        if ($stmt === false) {
+            // Log error for debugging
+            error_log("SQL Error in Product::getAll: " . print_r(sqlsrv_errors(), true));
+            return array();
+        }
+
         $products = array();
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
             $products[] = $row;
@@ -52,8 +58,13 @@ class Product
                 FROM {$this->table} p 
                 LEFT JOIN categories c ON p.category_id = c.category_id 
                 WHERE p.category_id = ?
-                ORDER BY p.name";
+                ORDER BY p.product_name";
         $stmt = sqlsrv_query($this->conn, $sql, array($categoryId));
+
+        if ($stmt === false) {
+            error_log("SQL Error in Product::getByCategory: " . print_r(sqlsrv_errors(), true));
+            return array();
+        }
 
         $products = array();
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
@@ -81,7 +92,7 @@ class Product
     public function update($id, $data)
     {
         $sql = "UPDATE {$this->table} 
-                SET name = ?, price = ?, photo_url = ?, category_id = ? 
+                SET product_name = ?, price = ?, photo_url = ?, category_id = ? 
                 WHERE product_id = ?";
 
         $params = array(
@@ -107,8 +118,14 @@ class Product
     {
         $sql = "SELECT COUNT(*) as total FROM {$this->table}";
         $stmt = sqlsrv_query($this->conn, $sql);
+        
+        if ($stmt === false) {
+            error_log("SQL Error in Product::getTotalProducts: " . print_r(sqlsrv_errors(), true));
+            return 0;
+        }
+        
         $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-        return $row['total'];
+        return $row ? $row['total'] : 0;
     }
 
     /**
@@ -129,11 +146,16 @@ class Product
                 LEFT JOIN categories c ON p.category_id = c.category_id
                 LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
                 LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id AND w.region_code = ?
-                GROUP BY p.product_id, p.name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
+                GROUP BY p.product_id, p.product_name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
                 HAVING SUM(wi.stock) > 0 OR SUM(wi.stock) IS NULL
                 ORDER BY p.created_at DESC";
         
         $stmt = sqlsrv_query($this->conn, $sql, array($regionCode));
+
+        if ($stmt === false) {
+            error_log("SQL Error in Product::getAllWithRegionStock: " . print_r(sqlsrv_errors(), true));
+            return array();
+        }
 
         $products = array();
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
@@ -161,11 +183,16 @@ class Product
                 LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
                 LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id AND w.region_code = ?
                 WHERE p.category_id = ?
-                GROUP BY p.product_id, p.name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
+                GROUP BY p.product_id, p.product_name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
                 HAVING SUM(wi.stock) > 0
-                ORDER BY p.name";
+                ORDER BY p.product_name";
         
         $stmt = sqlsrv_query($this->conn, $sql, array($regionCode, $categoryId));
+
+        if ($stmt === false) {
+            error_log("SQL Error in Product::getByCategoryWithRegionStock: " . print_r(sqlsrv_errors(), true));
+            return array();
+        }
 
         $products = array();
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {

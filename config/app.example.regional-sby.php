@@ -1,27 +1,26 @@
 # ============================================
-# EXAMPLE CONFIG - LAPTOP 3 (DATABASE REGIONAL JAKARTA)
+# EXAMPLE CONFIG - LAPTOP 3 (DATABASE REGIONAL SURABAYA)
 # ============================================
-# Copy isi file ini ke config/app.php untuk deployment Jakarta
+# Copy isi file ini ke config/app.php untuk deployment Surabaya
 
 <?php
 
 /**
- * KONFIGURASI UNTUK DATABASE REGIONAL JAKARTA
- * Database ini HANYA menyimpan data region JKT
+ * KONFIGURASI UNTUK DATABASE REGIONAL SURABAYA
+ * Database ini HANYA menyimpan data region SBY
  */
 
 // Mode: regional (database regional)
 define('REGION_MODE', 'regional');
 
-// Region code: JKT (Jakarta)
-define('REGION_CODE', 'JKT');
+// Region code: SBY (Surabaya)
+define('REGION_CODE', 'SBY');
 
 /**
  * Daftar Region yang Didukung
  */
 define('AVAILABLE_REGIONS', [
-    'JKT' => 'Jakarta',
-    'BDG' => 'Bandung',
+    'MDR' => 'Madura',
     'SBY' => 'Surabaya'
 ]);
 

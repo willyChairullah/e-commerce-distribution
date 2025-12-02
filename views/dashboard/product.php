@@ -29,8 +29,8 @@ ob_start();
                 <?php foreach ($products as $product): ?>
                     <tr>
                         <td><?php echo $product['product_id']; ?></td>
-                        <td><img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['name']; ?>" width="50"></td>
-                        <td><?php echo $product['name']; ?></td>
+                        <td><img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>" width="50"></td>
+                        <td><?php echo $product['product_name']; ?></td>
                         <td><?php echo $product['category_name']; ?></td>
                         <td><?php echo formatCurrency($product['price']); ?></td>
                         <td>

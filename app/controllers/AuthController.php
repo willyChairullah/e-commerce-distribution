@@ -66,22 +66,39 @@ class AuthController
             return;
         }
 
-        // Auto-set region_code dari config server
-        // User tidak bisa pilih region sendiri
-        $regionCode = getCurrentRegion();
-        
-        // Validasi: Regional mode harus punya region code
-        if (!isCentralMode() && empty($regionCode)) {
-            $_SESSION['error'] = 'Konfigurasi region tidak valid';
-            redirect('/register');
-            return;
+        // Determine region_code based on mode
+        if (isCentralMode()) {
+            // Central mode: user pilih region dari form
+            $regionCode = isset($_POST['region_code']) ? sanitize($_POST['region_code']) : '';
+            
+            if (empty($regionCode)) {
+                $_SESSION['error'] = 'Region harus dipilih';
+                redirect('/register');
+                return;
+            }
+            
+            // Validasi region code valid
+            if (!array_key_exists($regionCode, AVAILABLE_REGIONS)) {
+                $_SESSION['error'] = 'Region tidak valid';
+                redirect('/register');
+                return;
+            }
+        } else {
+            // Regional mode: auto-set dari config server
+            $regionCode = getCurrentRegion();
+            
+            if (empty($regionCode)) {
+                $_SESSION['error'] = 'Konfigurasi region tidak valid';
+                redirect('/register');
+                return;
+            }
         }
 
         $data = array(
             'full_name' => sanitize($_POST['full_name']),
             'email' => sanitize($_POST['email']),
             'password' => $_POST['password'],
-            'region_code' => $regionCode // Auto-set dari config
+            'region_code' => $regionCode
         );
 
         // Check if email already exists

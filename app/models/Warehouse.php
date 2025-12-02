@@ -16,23 +16,37 @@ class Warehouse
 
     public function create($data)
     {
-        $sql = "INSERT INTO {$this->table} (warehouse_name, region_code, address, created_at) 
-                VALUES (?, ?, ?, GETDATE())";
-
+        // Call stored procedure sp_InsertWarehouse
+        $sql = "{CALL sp_InsertWarehouse(?, ?, ?, ?)}";
+        
+        $newWarehouseId = '';
         $params = array(
-            $data['warehouse_name'],
-            $data['region_code'],
-            $data['address']
+            array($data['warehouse_name'], SQLSRV_PARAM_IN),
+            array($data['region_code'], SQLSRV_PARAM_IN),
+            array($data['address'], SQLSRV_PARAM_IN),
+            array(&$newWarehouseId, SQLSRV_PARAM_OUT, SQLSRV_PHPTYPE_STRING(SQLSRV_ENC_CHAR), SQLSRV_SQLTYPE_VARCHAR(50))
         );
 
         $stmt = sqlsrv_query($this->conn, $sql, $params);
-        return $stmt !== false;
+        
+        if ($stmt === false) {
+            error_log("SQL Error in Warehouse::create: " . print_r(sqlsrv_errors(), true));
+            return false;
+        }
+        
+        sqlsrv_free_stmt($stmt);
+        return $newWarehouseId; // Return generated ID
     }
 
     public function getAll()
     {
         $sql = "SELECT * FROM {$this->table} ORDER BY warehouse_name";
         $stmt = sqlsrv_query($this->conn, $sql);
+
+        if ($stmt === false) {
+            error_log("SQL Error in Warehouse::getAll: " . print_r(sqlsrv_errors(), true));
+            return array();
+        }
 
         $warehouses = array();
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
@@ -48,6 +62,7 @@ class Warehouse
         $stmt = sqlsrv_query($this->conn, $sql, array($id));
 
         if ($stmt === false) {
+            error_log("SQL Error in Warehouse::findById: " . print_r(sqlsrv_errors(), true));
             return null;
         }
 

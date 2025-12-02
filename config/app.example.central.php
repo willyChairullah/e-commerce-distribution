@@ -20,8 +20,7 @@ define('REGION_CODE', null);
  * Daftar Region yang Didukung
  */
 define('AVAILABLE_REGIONS', [
-    'JKT' => 'Jakarta',
-    'BDG' => 'Bandung',
+    'MDR' => 'Madura',
     'SBY' => 'Surabaya'
 ]);
 

@@ -38,7 +38,7 @@ class WarehouseItemController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = array(
-                'warehouse_id' => intval($_POST['warehouse_id']),
+                'warehouse_id' => sanitize($_POST['warehouse_id']), // VARCHAR now
                 'product_id' => intval($_POST['product_id']),
                 'stock' => intval($_POST['stock'])
             );
@@ -60,7 +60,13 @@ class WarehouseItemController
     public function edit()
     {
         requireAdmin();
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $id = isset($_GET['id']) ? sanitize($_GET['id']) : '';
+
+        if (empty($id)) {
+            $_SESSION['error'] = 'ID warehouse item tidak valid';
+            redirect('/dashboard/warehouse_item');
+            return;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stock = intval($_POST['stock']);
@@ -81,7 +87,13 @@ class WarehouseItemController
     public function delete()
     {
         requireAdmin();
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $id = isset($_GET['id']) ? sanitize($_GET['id']) : '';
+
+        if (empty($id)) {
+            $_SESSION['error'] = 'ID warehouse item tidak valid';
+            redirect('/dashboard/warehouse_item');
+            return;
+        }
 
         if ($this->warehouseItemModel->delete($id)) {
             $_SESSION['success'] = 'Stok berhasil dihapus';

@@ -1,16 +1,16 @@
 <?php
-$pageTitle = $product['name'];
+$pageTitle = $product['product_name'];
 ob_start();
 ?>
 
 <div class="product-detail">
     <div class="product-detail-main">
-        <div class="product-image">
-            <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['name']; ?>">
+        <div class="product-detail">
+            <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
         </div>
 
         <div class="product-info">
-            <h2><?php echo $product['name']; ?></h2>
+            <h2><?php echo $product['product_name']; ?></h2>
             <p class="category">Kategori: <?php echo $product['category_name']; ?></p>
             <p class="price"><?php echo formatCurrency($product['price']); ?></p>
 

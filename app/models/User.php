@@ -16,19 +16,28 @@ class User
 
     public function create($data)
     {
-        $sql = "INSERT INTO {$this->table} (full_name, email, password, region_code, is_admin, created_at) 
-                VALUES (?, ?, ?, ?, ?, GETDATE())";
-
+        // Call stored procedure sp_InsertUser
+        $sql = "{CALL sp_InsertUser(?, ?, ?, ?, ?, ?)}";
+        
+        $newUserId = '';
         $params = array(
-            $data['full_name'],
-            $data['email'],
-            password_hash($data['password'], PASSWORD_DEFAULT),
-            $data['region_code'],
-            isset($data['is_admin']) ? $data['is_admin'] : 0
+            array($data['full_name'], SQLSRV_PARAM_IN),
+            array($data['email'], SQLSRV_PARAM_IN),
+            array(password_hash($data['password'], PASSWORD_DEFAULT), SQLSRV_PARAM_IN),
+            array($data['region_code'], SQLSRV_PARAM_IN),
+            array(isset($data['is_admin']) ? $data['is_admin'] : 0, SQLSRV_PARAM_IN),
+            array(&$newUserId, SQLSRV_PARAM_OUT, SQLSRV_PHPTYPE_STRING(SQLSRV_ENC_CHAR), SQLSRV_SQLTYPE_VARCHAR(50))
         );
 
         $stmt = sqlsrv_query($this->conn, $sql, $params);
-        return $stmt !== false;
+        
+        if ($stmt === false) {
+            error_log("User::create - SQL Error: " . print_r(sqlsrv_errors(), true));
+            return false;
+        }
+        
+        sqlsrv_free_stmt($stmt);
+        return $newUserId; // Return generated user_id
     }
 
     public function findByEmail($email)

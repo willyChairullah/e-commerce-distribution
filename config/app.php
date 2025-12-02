@@ -1,8 +1,3 @@
-# ============================================
-# EXAMPLE CONFIG - LAPTOP 1 (DATABASE PUSAT)
-# ============================================
-# Copy isi file ini ke config/app.php untuk Laptop 1
-
 <?php
 
 /**
@@ -20,8 +15,7 @@ define('REGION_CODE', null);
  * Daftar Region yang Didukung
  */
 define('AVAILABLE_REGIONS', [
-    'JKT' => 'Jakarta',
-    'BDG' => 'Bandung',
+    'MDR' => 'Madura',
     'SBY' => 'Surabaya'
 ]);
 

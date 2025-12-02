@@ -31,23 +31,34 @@ class Cart
             // Update quantity if exists
             $sql = "UPDATE {$this->table} SET qty = qty + ? WHERE cart_item_id = ?";
             $stmt = sqlsrv_query($this->conn, $sql, array($data['qty'], $existing['cart_item_id']));
+            return $stmt !== false;
         } else {
-            // Insert new cart item
-            $sql = "INSERT INTO {$this->table} (user_id, warehouse_item_id, qty, created_at) 
-                    VALUES (?, ?, ?, GETDATE())";
-            $stmt = sqlsrv_query($this->conn, $sql, array(
-                $data['user_id'],
-                $data['warehouse_item_id'],
-                $data['qty']
-            ));
+            // Call stored procedure sp_InsertCartItem
+            $sql = "{CALL sp_InsertCartItem(?, ?, ?, ?)}";
+            
+            $newCartItemId = '';
+            $params = array(
+                array($data['user_id'], SQLSRV_PARAM_IN),
+                array($data['warehouse_item_id'], SQLSRV_PARAM_IN),
+                array($data['qty'], SQLSRV_PARAM_IN),
+                array(&$newCartItemId, SQLSRV_PARAM_OUT, SQLSRV_PHPTYPE_STRING(SQLSRV_ENC_CHAR), SQLSRV_SQLTYPE_VARCHAR(50))
+            );
+            
+            $stmt = sqlsrv_query($this->conn, $sql, $params);
+            
+            if ($stmt === false) {
+                error_log("SQL Error in Cart::add: " . print_r(sqlsrv_errors(), true));
+                return false;
+            }
+            
+            sqlsrv_free_stmt($stmt);
+            return $newCartItemId; // Return generated ID
         }
-
-        return $stmt !== false;
     }
 
     public function getByUser($userId)
     {
-        $sql = "SELECT ci.*, wi.stock, p.name as product_name, p.price, p.photo_url, 
+        $sql = "SELECT ci.*, wi.stock, p.product_name, p.price, p.photo_url, 
                        w.warehouse_name, w.region_code
                 FROM {$this->table} ci
                 LEFT JOIN warehouse_items wi ON ci.warehouse_item_id = wi.warehouse_item_id
@@ -56,6 +67,11 @@ class Cart
                 WHERE ci.user_id = ?
                 ORDER BY ci.created_at DESC";
         $stmt = sqlsrv_query($this->conn, $sql, array($userId));
+
+        if ($stmt === false) {
+            error_log("SQL Error in Cart::getByUser: " . print_r(sqlsrv_errors(), true));
+            return array();
+        }
 
         $items = array();
         while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {

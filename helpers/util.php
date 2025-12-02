@@ -395,3 +395,140 @@ function isValidDistributedId($id, $expectedType = null)
     
     return true;
 }
+
+/**
+ * ============================================
+ * TABLE FILTER HELPERS
+ * ============================================
+ */
+
+/**
+ * Get auto region filter (null untuk central, region code untuk regional)
+ * Gunakan ini di model untuk auto-apply filter
+ */
+function getAutoRegionFilter()
+{
+    if (isCentralMode()) {
+        return null; // No filter for central mode
+    }
+    return getCurrentRegion(); // Return region code for regional mode
+}
+
+/**
+ * Build SQL WHERE clause untuk filter region
+ * 
+ * @param string $tableAlias Table alias (e.g., 'w' for warehouses)
+ * @param string $columnName Column name (default: 'region_code')
+ * @param string|null $regionCode Region code (null = auto from config)
+ * @return string WHERE clause or empty string
+ */
+function buildRegionWhereClause($tableAlias = '', $columnName = 'region_code', $regionCode = null)
+{
+    if ($regionCode === null) {
+        $regionCode = getAutoRegionFilter();
+    }
+    
+    if ($regionCode === null) {
+        return ''; // No filter for central mode
+    }
+    
+    $prefix = $tableAlias ? $tableAlias . '.' : '';
+    return " AND {$prefix}{$columnName} = '{$regionCode}'";
+}
+
+/**
+ * Build SQL WHERE clause untuk filter via ID prefix
+ * Lebih efisien dari JOIN untuk tabel dengan distributed ID
+ * 
+ * @param string $columnName Column name (e.g., 'user_id', 'warehouse_id')
+ * @param string $tableAlias Table alias
+ * @param string|null $regionCode Region code (null = auto from config)
+ * @return string WHERE clause or empty string
+ */
+function buildIdPrefixWhereClause($columnName, $tableAlias = '', $regionCode = null)
+{
+    if ($regionCode === null) {
+        $regionCode = getAutoRegionFilter();
+    }
+    
+    if ($regionCode === null) {
+        return ''; // No filter for central mode
+    }
+    
+    $prefix = $tableAlias ? $tableAlias . '.' : '';
+    return " AND {$prefix}{$columnName} LIKE '{$regionCode}-%'";
+}
+
+/**
+ * Validate apakah suatu ID sesuai dengan region yang diharapkan
+ * Untuk mencegah cross-region operation
+ * 
+ * @param string $id ID to validate
+ * @param string|null $expectedRegion Expected region (null = auto from config)
+ * @return bool True if ID matches expected region
+ */
+function validateIdRegion($id, $expectedRegion = null)
+{
+    if ($expectedRegion === null) {
+        $expectedRegion = getCurrentRegion();
+    }
+    
+    // Central mode: no validation needed
+    if ($expectedRegion === null) {
+        return true;
+    }
+    
+    $actualRegion = extractRegionFromId($id);
+    return $actualRegion === $expectedRegion;
+}
+
+/**
+ * Validate multiple IDs untuk region yang sama
+ * 
+ * @param array $ids Array of IDs to validate
+ * @param string|null $expectedRegion Expected region (null = auto from config)
+ * @return bool True if all IDs match expected region
+ */
+function validateMultipleIdRegions($ids, $expectedRegion = null)
+{
+    foreach ($ids as $id) {
+        if (!validateIdRegion($id, $expectedRegion)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Get table name untuk tabel regional
+ * Helper untuk menentukan apakah tabel perlu filter
+ * 
+ * @param string $tableName Table name
+ * @return string 'global' atau 'regional'
+ */
+function getTableType($tableName)
+{
+    $globalTables = ['categories', 'products'];
+    $regionalTables = ['users', 'warehouses', 'warehouse_items', 'cart_items', 'orders', 'order_items'];
+    
+    if (in_array($tableName, $globalTables)) {
+        return 'global';
+    }
+    
+    if (in_array($tableName, $regionalTables)) {
+        return 'regional';
+    }
+    
+    return 'unknown';
+}
+
+/**
+ * Check if table needs region filter
+ * 
+ * @param string $tableName Table name
+ * @return bool True if table needs region filter
+ */
+function needsRegionFilter($tableName)
+{
+    return getTableType($tableName) === 'regional' && !isCentralMode();
+}

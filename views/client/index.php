@@ -23,8 +23,8 @@ ob_start();
         <?php else: ?>
             <?php foreach ($products as $product): ?>
                 <div class="product-card">
-                    <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['name']; ?>">
-                    <h3><?php echo $product['name']; ?></h3>
+                    <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
+                    <h3><?php echo $product['product_name']; ?></h3>
                     <p class="category"><?php echo $product['category_name']; ?></p>
                     <p class="price"><?php echo formatCurrency($product['price']); ?></p>
                     

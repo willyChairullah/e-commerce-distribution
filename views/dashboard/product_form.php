@@ -11,7 +11,7 @@ ob_start();
 
         <div class="form-group">
             <label>Nama Produk</label>
-            <input type="text" name="name" value="<?php echo isset($product) ? $product['name'] : ''; ?>" required>
+            <input type="text" name="name" value="<?php echo isset($product) ? $product['product_name'] : ''; ?>" required>
         </div>
 
         <div class="form-group">
@@ -34,8 +34,8 @@ ob_start();
 
         <div class="form-group">
             <label>Foto Produk</label>
-            <?php if (isset($product) && $product['photo_url']): ?>
-                <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['name']; ?>" width="100" style="display:block; margin-bottom:10px;">
+            <?php if (isset($product) && !empty($product['photo_url'])): ?>
+                <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>" width="100" style="display:block; margin-bottom:10px;">
             <?php endif; ?>
             <input type="file" name="photo" accept="image/*">
         </div>

@@ -78,44 +78,17 @@ class ClientController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = $_SESSION['user_id'];
-            $cartItems = $this->cartModel->getByUser($userId);
-
-            if (empty($cartItems)) {
-                $_SESSION['error'] = 'Keranjang kosong';
-                redirect('/klien/keranjang');
-                return;
-            }
-
-            // Calculate total
-            $totalAmount = 0;
-            foreach ($cartItems as $item) {
-                $totalAmount += $item['price'] * $item['qty'];
-            }
-
-            // Create order
-            $orderId = $this->orderModel->create($userId, $totalAmount);
+            
+            // Use stored procedure sp_CheckoutFromCart_WithCursor
+            // This SP handles: calculate total, create order, iterate cart with cursor,
+            // insert order items (trigger reduces stock), clear cart
+            $orderId = $this->orderModel->checkoutFromCart($userId);
 
             if ($orderId) {
-                // Add order items and reduce stock
-                foreach ($cartItems as $item) {
-                    $this->orderModel->addOrderItem(
-                        $orderId,
-                        $item['warehouse_item_id'],
-                        $item['qty'],
-                        $item['price']
-                    );
-
-                    // Reduce warehouse stock
-                    $this->warehouseItemModel->reduceStock($item['warehouse_item_id'], $item['qty']);
-                }
-
-                // Clear cart
-                $this->cartModel->clearUserCart($userId);
-
                 $_SESSION['success'] = 'Pesanan berhasil dibuat';
                 redirect('/klien/order_history');
             } else {
-                $_SESSION['error'] = 'Gagal membuat pesanan';
+                $_SESSION['error'] = 'Gagal membuat pesanan. Pastikan keranjang tidak kosong dan stok mencukupi.';
                 redirect('/klien/keranjang');
             }
         } else {
@@ -134,11 +107,18 @@ class ClientController
     public function orderDetail()
     {
         requireLogin();
-        $orderId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $orderId = isset($_GET['id']) ? sanitize($_GET['id']) : '';
+        
+        if (empty($orderId)) {
+            $_SESSION['error'] = 'ID order tidak valid';
+            redirect('/klien/order_history');
+            return;
+        }
+        
         $order = $this->orderModel->findById($orderId);
 
         // Check if order belongs to logged in user
-        if ($order['user_id'] != $_SESSION['user_id']) {
+        if (!$order || $order['user_id'] != $_SESSION['user_id']) {
             redirect('/klien/order_history');
             return;
         }

@@ -1,30 +1,29 @@
 # ============================================
-# EXAMPLE CONFIG - LAPTOP 2 (DATABASE REGIONAL BANDUNG)
+# EXAMPLE CONFIG - LAPTOP 2 (DATABASE REGIONAL MADURA)
 # ============================================
 # Copy isi file ini ke config/app.php untuk Laptop 2
 
 <?php
 
 /**
- * KONFIGURASI UNTUK LAPTOP 2 - DATABASE REGIONAL BANDUNG
- * Database ini HANYA menyimpan data region BDG
+ * KONFIGURASI UNTUK LAPTOP 2 - DATABASE REGIONAL MADURA
+ * Database ini HANYA menyimpan data region MDR
  */
 
 // Mode: regional (database regional)
 define('REGION_MODE', 'regional');
 
-// Region code: BDG (Bandung)
+// Region code: MDR (Madura)
 // PENTING: Ubah ini sesuai region yang dikelola
-// Pilihan: 'JKT', 'BDG', 'SBY'
-define('REGION_CODE', 'BDG');
+// Pilihan: 'MDR', 'SBY'
+define('REGION_CODE', 'MDR');
 
 /**
  * Daftar Region yang Didukung
  * (Tetap sama di semua deployment)
  */
 define('AVAILABLE_REGIONS', [
-    'JKT' => 'Jakarta',
-    'BDG' => 'Bandung',
+    'MDR' => 'Madura',
     'SBY' => 'Surabaya'
 ]);
 

@@ -56,7 +56,13 @@ class WarehouseController
     public function edit()
     {
         requireAdmin();
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $id = isset($_GET['id']) ? sanitize($_GET['id']) : '';
+
+        if (empty($id)) {
+            $_SESSION['error'] = 'ID warehouse tidak valid';
+            redirect('/dashboard/warehouse');
+            return;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = array(
@@ -81,7 +87,13 @@ class WarehouseController
     public function delete()
     {
         requireAdmin();
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $id = isset($_GET['id']) ? sanitize($_GET['id']) : '';
+
+        if (empty($id)) {
+            $_SESSION['error'] = 'ID warehouse tidak valid';
+            redirect('/dashboard/warehouse');
+            return;
+        }
 
         if ($this->warehouseModel->delete($id)) {
             $_SESSION['success'] = 'Warehouse berhasil dihapus';

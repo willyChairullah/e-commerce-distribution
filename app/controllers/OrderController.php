@@ -36,7 +36,14 @@ class OrderController
     public function detail()
     {
         requireAdmin();
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        $id = isset($_GET['id']) ? sanitize($_GET['id']) : '';
+        
+        if (empty($id)) {
+            $_SESSION['error'] = 'ID order tidak valid';
+            redirect('/dashboard/order');
+            return;
+        }
+        
         $order = $this->orderModel->findById($id);
         $orderItems = $this->orderModel->getOrderItems($id);
         require_once __DIR__ . '/../../views/dashboard/order_detail.php';
