@@ -118,12 +118,12 @@ class Product
     {
         $sql = "SELECT COUNT(*) as total FROM {$this->table}";
         $stmt = sqlsrv_query($this->conn, $sql);
-        
+
         if ($stmt === false) {
             error_log("SQL Error in Product::getTotalProducts: " . print_r(sqlsrv_errors(), true));
             return 0;
         }
-        
+
         $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
         return $row ? $row['total'] : 0;
     }
@@ -139,18 +139,35 @@ class Product
         }
 
         // Regional mode: return products with stock in region
-        $sql = "SELECT p.*, c.category_name,
-                       SUM(wi.stock) as total_stock,
-                       COUNT(DISTINCT wi.warehouse_id) as warehouse_count
-                FROM {$this->table} p 
-                LEFT JOIN categories c ON p.category_id = c.category_id
-                LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
-                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
-                LEFT JOIN regions r ON w.region_id = r.region_id AND r.region_code = ?
-                GROUP BY p.product_id, p.product_name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
-                HAVING SUM(wi.stock) > 0 OR SUM(wi.stock) IS NULL
-                ORDER BY p.created_at DESC";
-        
+        $sql = "SELECT 
+            p.product_id,
+            p.product_name,
+            p.price,
+            p.photo_url,
+            p.category_id,
+            p.created_at,
+            c.category_name,
+            SUM(wi.stock) AS total_stock,
+            COUNT(DISTINCT wi.warehouse_id) AS warehouse_count
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
+        LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
+        LEFT JOIN regions r ON w.region_id = r.region_id 
+            AND r.region_code = 'MDR'
+        GROUP BY 
+            p.product_id,
+            p.product_name,
+            p.price,
+            p.photo_url,
+            p.category_id,
+            p.created_at,
+            c.category_name
+        HAVING 
+            SUM(wi.stock) > 0 OR SUM(wi.stock) IS NULL
+        ORDER BY 
+            p.created_at DESC;";
+
         $stmt = sqlsrv_query($this->conn, $sql, array($regionCode));
 
         if ($stmt === false) {
@@ -177,18 +194,37 @@ class Product
         }
 
         // Regional mode: filter by region stock
-        $sql = "SELECT p.*, c.category_name,
-                       SUM(wi.stock) as total_stock
-                FROM {$this->table} p 
-                LEFT JOIN categories c ON p.category_id = c.category_id
-                LEFT JOIN warehouse_items wi ON p.product_id = wi.product_id
-                LEFT JOIN warehouses w ON wi.warehouse_id = w.warehouse_id
-                LEFT JOIN regions r ON w.region_id = r.region_id AND r.region_code = ?
+        $sql = "SELECT 
+                    p.product_id,
+                    p.product_name,
+                    p.price,
+                    p.photo_url,
+                    p.category_id,
+                    p.created_at,
+                    c.category_name,
+                    SUM(wi.stock) AS total_stock
+                FROM products p
+                LEFT JOIN categories c 
+                    ON p.category_id = c.category_id
+                LEFT JOIN warehouse_items wi 
+                    ON p.product_id = wi.product_id
+                LEFT JOIN warehouses w 
+                    ON wi.warehouse_id = w.warehouse_id
+                LEFT JOIN regions r 
+                    ON w.region_id = r.region_id 
+                    AND r.region_code = ?
                 WHERE p.category_id = ?
-                GROUP BY p.product_id, p.product_name, p.price, p.photo_url, p.category_id, p.created_at, c.category_name
+                GROUP BY 
+                    p.product_id,
+                    p.product_name,
+                    p.price,
+                    p.photo_url,
+                    p.category_id,
+                    p.created_at,
+                    c.category_name
                 HAVING SUM(wi.stock) > 0
-                ORDER BY p.product_name";
-        
+                ORDER BY p.product_name;";
+
         $stmt = sqlsrv_query($this->conn, $sql, array($regionCode, $categoryId));
 
         if ($stmt === false) {

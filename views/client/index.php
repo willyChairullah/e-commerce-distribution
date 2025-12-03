@@ -1,4 +1,6 @@
 <?php
+
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 $pageTitle = 'Beranda';
 ob_start();
 ?>
@@ -23,24 +25,23 @@ ob_start();
         <?php else: ?>
             <?php foreach ($products as $product): ?>
                 <div class="product-card">
-                    <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
+                    <img src="<?php echo $basePath . $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
                     <h3><?php echo $product['product_name']; ?></h3>
                     <p class="category"><?php echo $product['category_name']; ?></p>
                     <p class="price"><?php echo formatCurrency($product['price']); ?></p>
-                    
+
                     <?php if (!isCentralMode()): ?>
                         <?php if (isset($product['total_stock']) && $product['total_stock'] > 0): ?>
                             <p style="color: #4caf50; font-size: 13px; margin: 8px 0;">
                                 ✅ Tersedia di <?php echo getRegionName(); ?> (Stok: <?php echo $product['total_stock']; ?>)
                             </p>
+                            <a href="<?php echo url('klien/detil_produk?id=' . $product['product_id']); ?>" class="btn btn-primary">Lihat Detail</a>
                         <?php else: ?>
                             <p style="color: #999; font-size: 13px; margin: 8px 0;">
                                 ❌ Tidak tersedia di region ini
                             </p>
                         <?php endif; ?>
                     <?php endif; ?>
-                    
-                    <a href="<?php echo url('klien/detil_produk?id=' . $product['product_id']); ?>" class="btn btn-primary">Lihat Detail</a>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>

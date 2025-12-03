@@ -8,11 +8,6 @@ GO
 USE warehouse_3;
 GO
 
-/* ============================================
-   0. DROPPING TABLES JIKA SUDAH ADA
-   (URUTAN DARI CHILD → PARENT)
-   ============================================ */
-
 IF OBJECT_ID('dbo.order_items', 'U') IS NOT NULL
     DROP TABLE dbo.order_items;
 
@@ -37,10 +32,6 @@ IF OBJECT_ID('dbo.products', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.categories', 'U') IS NOT NULL
     DROP TABLE dbo.categories;
 GO
-
-/* ============================================
-   1. BUAT TABEL UTAMA (TANPA VIEW/SP/FUNCTION/TRIGGER/CURSOR)
-   ============================================ */
 
 -- categories (global table)
 CREATE TABLE dbo.categories (
@@ -138,10 +129,7 @@ CREATE TABLE dbo.order_items (
 );
 GO
 
-/* ============================================
-   2. INDEXES
-   ============================================ */
-
+-- INDEXES
 CREATE INDEX idx_products_category         ON dbo.products(category_id);
 CREATE INDEX idx_users_region_code         ON dbo.users(region_code);
 CREATE INDEX idx_users_email               ON dbo.users(email);
@@ -152,10 +140,6 @@ CREATE INDEX idx_cart_items_user           ON dbo.cart_items(user_id);
 CREATE INDEX idx_orders_user               ON dbo.orders(user_id);
 CREATE INDEX idx_order_items_order         ON dbo.order_items(order_id);
 GO
-
-/* ============================================
-   3. SAMPLE DATA (TANPA PROCEDURE/FUNCTION)
-   ============================================ */
 
 -- 3.1. Tambah kategori contoh
 INSERT INTO dbo.categories (category_name)
@@ -177,7 +161,7 @@ VALUES
     ('Celana Jeans', 250000, 2, '/assets/img/products/default.svg');
 GO
 
--- 3.3. Tambah user contoh (ID manual, sesuai format)
+-- 3.3. Tambah user contoh
 INSERT INTO dbo.users (user_id, full_name, email, password, region_code, is_admin)
 VALUES
     ('MDR-U-000001', 'Admin Madura', 'admin@example.com',
@@ -196,17 +180,11 @@ VALUES
 GO
 
 -- 3.5. Tambah warehouse_items (stok contoh)
--- asumsikan product_id = 1 pasti ada karena IDENTITY dari insert pertama
 INSERT INTO dbo.warehouse_items (warehouse_item_id, warehouse_id, product_id, stock)
 VALUES
     ('MDR-WI-000001', 'MDR-W-000001', 1, 100),
     ('SBY-WI-000001', 'SBY-W-000001', 1,  75);
 GO
-
-/* ============================================
-   4. (OPSIONAL) SAMPLE CART & ORDER DATA MANUAL
-      (Masih tanpa procedure/trigger/cursor)
-   ============================================ */
 
 -- Contoh: user MDR-U-000002 punya item di cart
 INSERT INTO dbo.cart_items (cart_item_id, user_id, warehouse_item_id, qty)

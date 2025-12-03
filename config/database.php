@@ -1,17 +1,11 @@
 <?php
 
-/**
- * Database Configuration for SQL Server
- * EXAMPLE FILE - Copy to database.php and update with your credentials
- */
-
 class Database
 {
-    // SQL Server Configuration
-    private $host = "127.0.0.1,1433";              // SQL Server host (e.g., localhost, 127.0.0.1, or server name)
-    private $database = "warehouse_3";       // Database name
-    private $username = "sa";                 // SQL Server username
-    private $password = "123";   // SQL Server password
+    private $host = "127.0.0.1,1433";
+    private $database = "fick";
+    private $username = "sa";
+    private $password = "123";
     private $conn = null;
 
     /**

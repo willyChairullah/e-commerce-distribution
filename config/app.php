@@ -1,19 +1,8 @@
 <?php
 
-/**
- * KONFIGURASI UNTUK LAPTOP 1 - DATABASE PUSAT
- * Database ini menyimpan SEMUA data dari semua region
- */
+define('REGION_MODE', 'regional');
+define('REGION_CODE', 'MDR');
 
-// Mode: central (database pusat)
-define('REGION_MODE', 'central');
-
-// Region code: null (karena ini pusat, bukan regional spesifik)
-define('REGION_CODE', null);
-
-/**
- * Daftar Region yang Didukung
- */
 define('AVAILABLE_REGIONS', [
     'MDR' => 'Madura',
     'SBY' => 'Surabaya'

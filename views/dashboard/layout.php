@@ -24,7 +24,7 @@
                 <a href="<?php echo url('dashboard'); ?>" class="menu-item">
                     <?php echo isCentralMode() ? 'Dashboard Global' : 'Dashboard Regional'; ?>
                 </a>
-                
+
                 <?php if (isCentralMode()): ?>
                     <!-- Menu untuk Admin Pusat -->
                     <a href="<?php echo url('dashboard/product'); ?>" class="menu-item">Produk (Global)</a>
@@ -42,7 +42,7 @@
                     <a href="<?php echo url('dashboard/user'); ?>" class="menu-item">User Regional</a>
                     <a href="<?php echo url('dashboard/report'); ?>" class="menu-item">Laporan Region</a>
                 <?php endif; ?>
-                
+
                 <hr>
                 <a href="<?php echo url('klien'); ?>" class="menu-item">Lihat Website</a>
                 <a href="<?php echo url('logout'); ?>" class="menu-item">Logout</a>

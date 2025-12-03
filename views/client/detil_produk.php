@@ -1,4 +1,6 @@
 <?php
+
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 $pageTitle = $product['product_name'];
 ob_start();
 ?>
@@ -6,7 +8,7 @@ ob_start();
 <div class="product-detail">
     <div class="product-detail-main">
         <div class="product-detail">
-            <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
+            <img src="<?php echo $basePath . $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
         </div>
 
         <div class="product-info">

@@ -1,4 +1,5 @@
 <?php
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 $pageTitle = 'Keranjang Belanja';
 ob_start();
 ?>
@@ -30,7 +31,7 @@ ob_start();
                 ?>
                     <tr>
                         <td>
-                            <img src="<?php echo $item['photo_url']; ?>" alt="<?php echo $item['product_name']; ?>" width="50">
+                            <img src="<?php echo $basePath . $item['photo_url']; ?>" alt="<?php echo $item['product_name']; ?>" width="50">
                             <?php echo $item['product_name']; ?>
                         </td>
                         <td><?php echo $item['warehouse_name']; ?> (<?php echo $item['region_code']; ?>)</td>

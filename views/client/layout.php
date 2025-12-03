@@ -13,21 +13,22 @@
         <div class="container">
             <div class="header-content">
                 <h1 class="logo"><a href="<?php echo url('klien'); ?>">Toko Online</a></h1>
-                
+
                 <?php if (!isCentralMode()): ?>
-                    <div style="display: inline-block; padding: 8px 16px; background: #e3f2fd; border-radius: 4px; margin-left: 20px;">
+                    <div style="display: inline-block; padding: 8px 16px; background: transparent; border-radius: 4px; margin-left: 20px;">
                         <span style="font-size: 14px;">📍 <strong>Region: <?php echo getRegionName(); ?></strong></span>
                     </div>
                 <?php endif; ?>
-                
+
                 <nav class="nav">
                     <a href="<?php echo url('klien'); ?>">Beranda</a>
                     <?php if (isLoggedIn()): ?>
-                        <a href="<?php echo url('klien/keranjang'); ?>">Keranjang</a>
-                        <a href="<?php echo url('klien/order_history'); ?>">Pesanan Saya</a>
                         <a href="<?php echo url('klien/profile'); ?>">Profile</a>
                         <?php if (isAdmin()): ?>
                             <a href="<?php echo url('dashboard'); ?>">Dashboard Admin</a>
+                        <?php else: ?>
+                            <a href="<?php echo url('klien/keranjang'); ?>">Keranjang</a>
+                            <a href="<?php echo url('klien/order_history'); ?>">Pesanan Saya</a>
                         <?php endif; ?>
                         <a href="<?php echo url('logout'); ?>">Logout</a>
                     <?php else: ?>

@@ -38,11 +38,11 @@ class ClientController
     {
         // Get current region from config
         $regionCode = getCurrentRegion();
-        
+
         // Get products filtered by region (if regional mode)
         $products = $this->productModel->getAllWithRegionStock($regionCode);
         $categories = $this->categoryModel->getAll();
-        
+
         require_once __DIR__ . '/../../views/client/index.php';
     }
 
@@ -50,12 +50,12 @@ class ClientController
     {
         $categoryId = isset($_GET['id']) ? intval($_GET['id']) : 0;
         $regionCode = getCurrentRegion();
-        
+
         // Get products by category filtered by region
         $products = $this->productModel->getByCategoryWithRegionStock($categoryId, $regionCode);
         $categories = $this->categoryModel->getAll();
         $category = $this->categoryModel->findById($categoryId);
-        
+
         require_once __DIR__ . '/../../views/client/produk_kategori.php';
     }
 
@@ -63,12 +63,12 @@ class ClientController
     {
         $productId = isset($_GET['id']) ? intval($_GET['id']) : 0;
         $regionCode = getCurrentRegion();
-        
+
         $product = $this->productModel->findById($productId);
-        
+
         // Get warehouse items filtered by region
         $warehouseItems = $this->warehouseItemModel->getByProduct($productId, $regionCode);
-        
+
         require_once __DIR__ . '/../../views/client/detil_produk.php';
     }
 
@@ -78,7 +78,7 @@ class ClientController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = $_SESSION['user_id'];
-            
+
             // Use stored procedure sp_CheckoutFromCart_WithCursor
             // This SP handles: calculate total, create order, iterate cart with cursor,
             // insert order items (trigger reduces stock), clear cart
@@ -108,13 +108,13 @@ class ClientController
     {
         requireLogin();
         $orderId = isset($_GET['id']) ? sanitize($_GET['id']) : '';
-        
+
         if (empty($orderId)) {
             $_SESSION['error'] = 'ID order tidak valid';
             redirect('/klien/order_history');
             return;
         }
-        
+
         $order = $this->orderModel->findById($orderId);
 
         // Check if order belongs to logged in user

@@ -1,10 +1,6 @@
 USE warehouse_3;
 GO
 
-/* =====================================================
-   0) BERSIHKAN OBJECT LAMA JIKA ADA
-   ===================================================== */
-
 -- Trigger
 IF OBJECT_ID('dbo.trg_OrderItems_AfterInsert_UpdateStock', 'TR') IS NOT NULL
     DROP TRIGGER dbo.trg_OrderItems_AfterInsert_UpdateStock;

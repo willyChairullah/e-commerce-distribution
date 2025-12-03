@@ -1,4 +1,5 @@
 <?php
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 $pageTitle = 'Produk - ' . ($category['category_name'] ?? 'Kategori');
 ob_start();
 ?>
@@ -24,7 +25,7 @@ ob_start();
         <?php else: ?>
             <?php foreach ($products as $product): ?>
                 <div class="product-card">
-                    <img src="<?php echo $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
+                    <img src="<?php echo $basePath . $product['photo_url']; ?>" alt="<?php echo $product['product_name']; ?>">
                     <h3><?php echo $product['product_name']; ?></h3>
                     <p class="category"><?php echo $product['category_name']; ?></p>
                     <p class="price"><?php echo formatCurrency($product['price']); ?></p>
